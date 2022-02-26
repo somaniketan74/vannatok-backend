@@ -15,7 +15,7 @@ coverage
 .DS_Store
 _warmup/
 package-lock.json
-.env
+.env*
 temp
 
 .vscode
