@@ -32,9 +32,9 @@ offline: [HTTP] server ready: http://localhost:3000 🚀
 
 # Application Images
 
-<img src="images/home.jpeg" width="33%"></img>
-<img src="images/discover.jpeg" width="33%"></img>
-<img src="images/settings.jpeg" width="33%"></img>
+<img src="images/home.jpeg" width="32%"></img>
+<img src="images/discover.jpeg" width="32%"></img>
+<img src="images/settings.jpeg" width="32%"></img>
 
 ![Home](images/webhome.png)
 
