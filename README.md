@@ -32,12 +32,13 @@ offline: [HTTP] server ready: http://localhost:3000 🚀
 
 # Application Images
 
-![Home](images/home.jpeg) ![Discover](images/discover.jpeg) ![Settings](images/settings.jpeg)
+<img src="images/home.jpeg" width="33%"></img>
+<img src="images/discover.jpeg" width="33%"></img>
+<img src="images/settings.jpeg" width="33%"></img>
 
 ![Home](images/webhome.png)
 
 # Code Screenshots
 
-![Serverless](images/serverless.yml.png)
-
-![Webpack](images/webpack.config.png)
+<img src="images/serverless.yml.png" width="50%"></img>
+<img src="images/webpack.config.png" width="50%"></img>
