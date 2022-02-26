@@ -1,0 +1,257 @@
+service: vanna-backend
+
+
+plugins:
+  - serverless-webpack
+  - serverless-offline
+  - serverless-domain-manager
+  - serverless-plugin-warmup
+  - serverless-dotenv-plugin
+  - serverless-plugin-common-layers
+
+
+provider:
+  name: aws
+  region: ${env:DEPLOYMENT_REGION}
+  runtime: nodejs12.x
+  role: arn:aws:iam::981477912451:role/lambda-policy
+  deploymentBucket:
+    name: ${self:custom.bucketname}
+    maxPreviousDeploymentArtifacts: 10
+  lambdaHashingVersion: 20201221
+  apiGateway:
+    shouldStartNameWithService: true
+  layers:
+    - arn:aws:lambda:${env:DEPLOYMENT_REGION}:981477912451:layer:vannatok-backend-packages:${env:LAYER_VERSION}
+  environment:
+    DATABASE_URI: ${ssm:/vannatok/${opt:stage}/DATABASE_URI}
+    GOOGLE_CLIENT_SECRET: ${ssm:/vannatok/${opt:stage}/GOOGLE_CLIENT_SECRET}
+    BUCKET_ACCESS_KEY_ID: ${ssm:/vannatok/${opt:stage}/BUCKET_ACCESS_KEY_ID}
+    BUCKET_ACCESS_SECRET: ${ssm:/vannatok/${opt:stage}/BUCKET_ACCESS_SECRET}
+    JWT_SECRET: ${ssm:/vannatok/${opt:stage}/JWT_SECRET}
+
+custom:  
+  stage: ${opt:stage, 'dev'}
+  domains:
+    stage: api-stage.vanna.com
+    preprod: api-preprod.vanna.com
+    prod: api.vanna.com
+  customDomain:
+    basePath: "core"
+    domainName: ${self:custom.domains.${self:custom.stage}}
+    stage: "${self:custom.stage}"
+    certificateName: '*.vanna.com'
+    createRoute53Record: true
+    serverless-offline:
+      httpsProtocol: "dev-certs"
+      port: 4000
+  bucketname: ${env:DEPLOYMENT_BUCKET_NAME}
+  isProd:
+    stage: false
+    preprod: false
+    prod: true
+  common:
+    cors: ${file(cors.yml)}
+  warmup:
+    enabled: ${self:custom.isProd.${self:custom.stage}, false} # Whether to warm up functions by default or not, enabled only on production
+    cleanFolder: false # Whether remove _warmup directory with WarmUp lambda or not
+    folderName: '_warmup' # Name of the folder created for the generated warmup
+    memorySize: 256
+    vpc: false
+    events:
+      - schedule: 'cron(0/10 5-22 ? * * *)' # Run WarmUp every 10 minutes, every day, between 5:00 and 22:00 (UTC)
+    timeout: 5
+    prewarm: true # Run WarmUp immediately after a deployment lambda
+    concurrency: 1 # Warm up 1 concurrent instance
+
+
+functions:
+  getCategory:
+    handler: src/index.getCategory
+    events:
+      - http:
+          path: /v1/category
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getSkillList:
+    handler: src/index.getSkillList
+    events:
+      - http:
+          path: /v1/skills
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  createComment:
+    handler: src/index.createComment
+    events:
+      - http:
+          path: /v1/comment
+          method: post
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  createContentView:
+    handler: src/index.createView
+    events:
+      - http:
+          path: /v1/view
+          method: post
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  updateContentView:
+    handler: src/index.updateView
+    events:
+      - http:
+          path: /v1/view/{id}
+          method: put
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getComment:
+    handler: src/index.getComment
+    events:
+      - http:
+          path: /v1/comment
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getLikes:
+    handler: src/index.getLike
+    events:
+      - http:
+          path: /v1/like
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  createLike:
+    handler: src/index.createLike
+    events:
+      - http:
+          path: /v1/like
+          method: post
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  removeLike:
+    handler: src/index.removeLike
+    events:
+      - http:
+          path: /v1/like
+          method: delete
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getContentUploadUrl:
+    handler: src/index.getContentUploadUrl
+    events:
+      - http:
+          path: /v1/content/upload/url
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getContentView:
+    handler: src/index.getView
+    events:
+      - http:
+          path: /v1/view
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  createContent:
+    handler: src/index.createContent
+    events:
+      - http:
+          path: /v1/content
+          method: post
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  createContentByAdmin:
+    handler: src/index.createContentByAdmin
+    events:
+      - http:
+          path: /v1/admin/content
+          method: post
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getContentList:
+    handler: src/index.getContentList
+    events:
+      - http:
+          path: /v1/content
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getContentListByAdmin:
+    handler: src/index.getContentListByAdmin
+    events:
+      - http:
+          path: /v1/admin/content
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getUserAnalytics:
+    handler: src/index.getUserAnalytics
+    events:
+      - http:
+          path: /v1/user-analytics
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  updateContent:
+    handler: src/index.updateContent
+    events:
+      - http:
+          path: /v1/content/{id}
+          method: put
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  updateContentByAdmin:
+    handler: src/index.updateContentByAdmin
+    events:
+      - http:
+          path: /v1/admin/content/{id}
+          method: put
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  updateComment:
+    handler: src/index.updateComment
+    events:
+      - http:
+          path: /v1/comment/{id}
+          method: put
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  deleteBookmark:
+    handler: src/index.removeBookmark
+    events:
+      - http:
+          path: /v1/bookmark/{id}
+          method: delete
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  createBookmark:
+    handler: src/index.createBookmark
+    events:
+      - http:
+          path: /v1/bookmark
+          method: post
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getBookmark:
+    handler: src/index.getBookmark
+    events:
+      - http:
+          path: /v1/bookmark
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  updateVersion:
+    handler: src/index.updateVersion
+    events:
+      - http:
+          path: /v1/version
+          method: put
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getVersion:
+    handler: src/index.getVersion
+    events:
+      - http:
+          path: /v1/version
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getSquidexArticles:
+    handler: src/index.getSquidexArticles
+    events:
+      - http:
+          path: /v1/squidexarticles
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getSquidexArticleBySlug:
+    handler: src/index.getSquidexArticleBySlug
+    events:
+      - http:
+          path: /v1/squidexarticle/{slug}
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}
+  getSquidex:
+    handler: src/index.getSquidex
+    events:
+      - http:
+          path: /v1/squidex
+          method: get
+          cors: ${self:custom.common.cors.${self:custom.stage}.defaultCache}

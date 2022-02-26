@@ -1,0 +1,3 @@
+[submodule "src/lib/models"]
+	path = src/lib/models
+	url = git@github.com:vanna2/models.git

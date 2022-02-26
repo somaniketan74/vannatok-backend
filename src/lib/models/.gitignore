@@ -1,0 +1,21 @@
+# package directories
+node_modules
+jspm_packages
+
+# Serverless directories
+.serverless
+
+# Webpack directories
+.webpack
+build
+secrets.yml
+.nyc_output
+coverage
+
+.DS_Store
+_warmup/
+package-lock.json
+.env
+temp
+
+.vscode
